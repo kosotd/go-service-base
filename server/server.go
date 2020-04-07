@@ -17,7 +17,23 @@ import (
 	"time"
 )
 
-var router = gin.New()
+var router *gin.Engine
+
+func init() {
+	if utils.Equals(config.BuildMode(), gin.ReleaseMode) {
+		gin.SetMode(gin.ReleaseMode)
+	} else if utils.Equals(config.BuildMode(), gin.DebugMode) {
+		gin.SetMode(gin.DebugMode)
+	}
+
+	router = gin.New()
+
+	router.Use(cors.New(cors.Config{
+		AllowHeaders: allowHeaders,
+		AllowMethods: allowMethods,
+		AllowOrigins: config.AllowedOrigins(),
+	}))
+}
 
 func AddHandler(method string, path string, handler http.HandlerFunc) {
 	router.Handle(method, path, gin.WrapF(handler))
@@ -34,18 +50,6 @@ func AddPostHandler(path string, handler http.HandlerFunc) {
 func RunServer() {
 	defer cache.Close()
 	defer database.Close()
-
-	if utils.Equals(config.BuildMode(), gin.ReleaseMode) {
-		gin.SetMode(gin.ReleaseMode)
-	} else if utils.Equals(config.BuildMode(), gin.DebugMode) {
-		gin.SetMode(gin.DebugMode)
-	}
-
-	router.Use(cors.New(cors.Config{
-		AllowHeaders: allowHeaders,
-		AllowMethods: allowMethods,
-		AllowOrigins: config.AllowedOrigins(),
-	}))
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", config.ServerPort()),
