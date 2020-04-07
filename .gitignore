@@ -1,0 +1,5 @@
+*.iml
+*.idea
+*.sum
+/database_test/config.env
+/config/config.env

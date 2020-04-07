@@ -1,0 +1,15 @@
+{
+  "ServerPort": "8082",
+  "CacheExpiration": "6m",
+  "CacheUpdatePeriod": "2m",
+  "LogLevel": 2,
+  "BuildMode": "release",
+  "AllowedOrigins": ["http://localhost"],
+  "Databases": [
+    "OracleDb;oracle:user/password@localhost:1521/orcl"
+  ],
+  "Test": 1,
+  "Test1": "test",
+  "Test2": ["test"],
+  "Test3": "1m"
+}
