@@ -3,6 +3,7 @@ module github.com/kosotd/go-service-base
 go 1.12
 
 require (
+	github.com/360EntSecGroup-Skylar/excelize/v2 v2.1.0
 	github.com/allegro/bigcache v1.2.1
 	github.com/cridenour/go-postgis v1.0.0
 	github.com/docker/go-connections v0.4.0
@@ -15,6 +16,7 @@ require (
 	github.com/prestodb/presto-go-client v0.0.0-20200302111820-5ec09431be26
 	github.com/sirupsen/logrus v1.4.1 // indirect
 	github.com/testcontainers/testcontainers-go v0.3.1
+	golang.org/x/text v0.3.2
 	gopkg.in/goracle.v2 v2.24.1
 	gotest.tools v2.2.0+incompatible
 )
