@@ -22,11 +22,19 @@ import (
 func TestDatabases(t *testing.T) {
 	defer testcontainers.Close()
 
-	dbType, err := database.GetDatabaseType("PostgresDb")
+	dbType := database.MustGetDatabaseType("PostgresDb")
+	assert.Equal(t, dbType, "postgres")
+
+	conn := database.MustGetConnection("PostgresDb")
+	defer utils.CloseSafe(conn)
+	err := conn.PingContext(context.Background())
+	assert.NilError(t, err)
+
+	dbType, err = database.GetDatabaseType("PostgresDb")
 	assert.NilError(t, err)
 	assert.Equal(t, dbType, "postgres")
 
-	conn, err := database.GetConnection("PostgresDb")
+	conn, err = database.GetConnection("PostgresDb")
 	assert.NilError(t, err)
 	defer utils.CloseSafe(conn)
 	err = conn.PingContext(context.Background())
@@ -34,7 +42,11 @@ func TestDatabases(t *testing.T) {
 
 	prepareDb(conn, t)
 
-	values, err := database.GetValues(conn, "select * from public.test")
+	values := database.MustGetValues(conn, "select * from public.test")
+	assert.Equal(t, values[0][0].(int64), int64(1))
+	assert.Equal(t, values[0][1].(string), "text")
+
+	values, err = database.GetValues(conn, "select * from public.test")
 	assert.NilError(t, err)
 	assert.Equal(t, values[0][0].(int64), int64(1))
 	assert.Equal(t, values[0][1].(string), "text")

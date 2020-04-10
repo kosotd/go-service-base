@@ -71,11 +71,27 @@ func GetConnection(name string) (*sql.Conn, error) {
 	return nil, errors.New(fmt.Sprintf("connection with name %s not found", name))
 }
 
+func MustGetConnection(name string) *sql.Conn {
+	if conn, err := GetConnection(name); err != nil {
+		panic(err)
+	} else {
+		return conn
+	}
+}
+
 func GetDatabaseType(name string) (string, error) {
 	if value, ok := dbTypes.Load(strings.ToLower(strings.Trim(name, " "))); ok {
 		return value.(string), nil
 	}
 	return "", errors.New(fmt.Sprintf("connection with name %s not found", name))
+}
+
+func MustGetDatabaseType(name string) string {
+	if dbType, err := GetDatabaseType(name); err != nil {
+		panic(err)
+	} else {
+		return dbType
+	}
 }
 
 func Close() {

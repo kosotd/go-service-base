@@ -37,6 +37,14 @@ func BuildFeatureCollection(props []map[string]interface{}) ([]byte, error) {
 	return res, nil
 }
 
+func MustBuildFeatureCollection(props []map[string]interface{}) []byte {
+	if res, err := BuildFeatureCollection(props); err != nil {
+		panic(err)
+	} else {
+		return res
+	}
+}
+
 func getStringProperty(prop map[string]interface{}, key string) (string, error) {
 	val, ok := prop[key]
 	if !ok {

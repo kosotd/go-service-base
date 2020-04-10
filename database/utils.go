@@ -37,3 +37,11 @@ func GetValues(db *sql.Conn, query string) ([][]interface{}, error) {
 
 	return result, nil
 }
+
+func MustGetValues(db *sql.Conn, query string) [][]interface{} {
+	if values, err := GetValues(db, query); err != nil {
+		panic(err)
+	} else {
+		return values
+	}
+}
