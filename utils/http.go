@@ -73,3 +73,11 @@ func DoRequest(method domain.Method) (int, []byte, error) {
 
 	return resp.StatusCode, respBody, nil
 }
+
+func MustDoRequest(method domain.Method) []byte {
+	if _, res, err := DoRequest(method); err != nil {
+		panic(err)
+	} else {
+		return res
+	}
+}

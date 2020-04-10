@@ -12,6 +12,25 @@ import (
 )
 
 func TestServer(t *testing.T) {
+	AddHandler("GET", "/get1", func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = writer.Write([]byte("ok"))
+		writer.WriteHeader(http.StatusOK)
+	})
+
+	AddGetHandler("/get2", func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = writer.Write([]byte("ok"))
+		writer.WriteHeader(http.StatusOK)
+	})
+
+	AddPostHandler("/post1", func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = writer.Write([]byte("ok"))
+		writer.WriteHeader(http.StatusOK)
+	})
+
+	AddGinHandler("POST", "/post2", func(context *gin.Context) {
+		context.Data(http.StatusOK, "application/text", []byte("ok"))
+	})
+
 	AddGinGetHandler("/get", func(c *gin.Context) {
 		c.Data(http.StatusAccepted, "application/text", []byte("ok"))
 	})
@@ -45,6 +64,11 @@ func TestServer(t *testing.T) {
 	})
 
 	go RunServer()
+
+	assert.Equal(t, string(utils.MustDoRequest(domain.Method{Url: "http://localhost:8081/get1"})), "ok")
+	assert.Equal(t, string(utils.MustDoRequest(domain.Method{Url: "http://localhost:8081/get2"})), "ok")
+	assert.Equal(t, string(utils.MustDoRequest(domain.Method{Method: "POST", Url: "http://localhost:8081/post1"})), "ok")
+	assert.Equal(t, string(utils.MustDoRequest(domain.Method{Method: "POST", Url: "http://localhost:8081/post2"})), "ok")
 
 	status, resp, err := utils.DoRequest(domain.Method{
 		Url: "http://localhost:8081/get",
