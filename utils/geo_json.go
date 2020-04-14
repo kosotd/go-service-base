@@ -51,10 +51,13 @@ func getStringProperty(prop map[string]interface{}, key string) (string, error) 
 		return "", errors.Errorf("utils.getStringProperty -> prop has no key: %s", key)
 	}
 
-	valStr, ok := val.(string)
-	if !ok {
-		return "", errors.Errorf("utils.getStringProperty -> prop[%s] is not string", key)
+	if valStr, ok := val.(string); ok {
+		return valStr, nil
 	}
 
-	return valStr, nil
+	if valStr, ok := val.(*string); ok && valStr != nil {
+		return *valStr, nil
+	}
+
+	return "", errors.Errorf("utils.getStringProperty -> prop[%s] is not string", key)
 }
