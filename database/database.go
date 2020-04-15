@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/kosotd/go-service-base/config"
 	"github.com/kosotd/go-service-base/database/domain"
 	"github.com/kosotd/go-service-base/utils"
@@ -27,9 +28,9 @@ func init() {
 			utils.LogError(errors.Wrapf(err, "database.init -> parseUrl(%s)", database).Error())
 			continue
 		}
-		db, err := sql.Open(conn.Driver, conn.Url)
+		db, err := sqlx.Open(conn.Driver, conn.Url)
 		if err != nil {
-			utils.LogError(errors.Wrapf(err, "database.init -> sql.Open(%s)", conn.Url).Error())
+			utils.LogError(errors.Wrapf(err, "database.init -> sqlx.Open(%s)", conn.Url).Error())
 			continue
 		}
 		err = pingTimeout(db, conn)
@@ -45,7 +46,7 @@ func init() {
 	}
 }
 
-func pingTimeout(db *sql.DB, conn domain.Connection) error {
+func pingTimeout(db *sqlx.DB, conn domain.Connection) error {
 	errChan := make(chan error, 1)
 	go func() {
 		errChan <- db.Ping()
@@ -59,9 +60,16 @@ func pingTimeout(db *sql.DB, conn domain.Connection) error {
 	}
 }
 
+func getDB(name string) (*sqlx.DB, error) {
+	if value, ok := connections.Load(strings.ToLower(strings.Trim(name, " "))); ok {
+		return value.(*sqlx.DB), nil
+	}
+	return nil, errors.New(fmt.Sprintf("db with name %s not found", name))
+}
+
 func GetConnection(name string) (*sql.Conn, error) {
 	if value, ok := connections.Load(strings.ToLower(strings.Trim(name, " "))); ok {
-		db := value.(*sql.DB)
+		db := value.(*sqlx.DB)
 		conn, err := db.Conn(context.Background())
 		if err != nil {
 			return nil, errors.Wrapf(err, "database.GetConnection -> db.Conn")
@@ -96,7 +104,7 @@ func MustGetDatabaseType(name string) string {
 
 func Close() {
 	connections.Range(func(key, value interface{}) bool {
-		db := value.(*sql.DB)
+		db := value.(*sqlx.DB)
 		if db != nil {
 			_ = db.Close()
 		}

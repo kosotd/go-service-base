@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/docker/distribution/uuid"
 	"github.com/docker/go-connections/nat"
 	"github.com/kosotd/go-service-base/utils"
 	_ "github.com/lib/pq"
@@ -20,8 +21,16 @@ import (
 var postgres testcontainers.Container
 var oracle testcontainers.Container
 var presto testcontainers.Container
+var network testcontainers.Network
+var networkName string
 
 func init() {
+	provider, err := testcontainers.NewDockerProvider()
+	utils.FailIfError(err)
+	networkName = uuid.Generate().String()
+	network, err = provider.CreateNetwork(context.Background(), testcontainers.NetworkRequest{Name: networkName})
+	utils.FailIfError(err)
+
 	postgresUrl := initPostgres()
 	oracleUrl := initOracle()
 	prestoUrl := initPresto()
@@ -40,6 +49,10 @@ func Close() {
 	if presto != nil {
 		_ = presto.Terminate(context.Background())
 	}
+
+	if network != nil {
+		_ = network.Remove(context.Background())
+	}
 }
 
 func initPostgres() string {
@@ -50,7 +63,7 @@ func initPostgres() string {
 	postgresEnv["POSTGRES_PASSWORD"] = "postgres"
 	postgresEnv["POSTGRES_USER"] = "postgres"
 	postgresEnv["POSTGRES_DB"] = "postgres"
-	postgres = initContainer("mdillon/postgis:9.6", strPort, postgresEnv)
+	postgres = initContainer("test_postgres", "mdillon/postgis:9.6", strPort, postgresEnv)
 
 	host, err := postgres.Host(ctx)
 	utils.FailIfError(err)
@@ -72,7 +85,7 @@ func initOracle() string {
 	ctx := context.Background()
 
 	strPort := "1521/tcp"
-	oracle = initContainer("oracleinanutshell/oracle-xe-11g", "1521/tcp", make(map[string]string))
+	oracle = initContainer("test_oralce", "oracleinanutshell/oracle-xe-11g", "1521/tcp", make(map[string]string))
 
 	host, err := oracle.Host(ctx)
 	utils.FailIfError(err)
@@ -93,6 +106,14 @@ func initOracle() string {
 func initPresto() string {
 	ctx := context.Background()
 
+	connector := fmt.Sprintf(`connector.name=postgresql
+connection-url=jdbc:postgresql://%s:%s/postgres
+connection-user=postgres
+connection-password=postgres`, "test_postgres", "5432")
+
+	err := ioutil.WriteFile("./presto-image/catalog/postgresql.properties", []byte(connector), os.ModePerm)
+	utils.FailIfError(err)
+
 	strPort := "8080/tcp"
 	req := testcontainers.ContainerRequest{
 		FromDockerfile: testcontainers.FromDockerfile{
@@ -100,10 +121,10 @@ func initPresto() string {
 			Context:    "./presto-image",
 		},
 		ExposedPorts: []string{strPort},
+		Networks:     []string{networkName},
 		WaitingFor:   wait.ForLog("======== SERVER STARTED ========"),
 	}
 
-	var err error
 	presto, err = testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
@@ -123,15 +144,19 @@ func initPresto() string {
 	err = waitForPing(db)
 	utils.FailIfError(err)
 
+	time.Sleep(3 * time.Second)
+
 	return fmt.Sprintf("PrestoDb;presto:user/password@%s:%s", host, mappedPort.Port())
 }
 
-func initContainer(image string, port string, env map[string]string) testcontainers.Container {
+func initContainer(name string, image string, port string, env map[string]string) testcontainers.Container {
 	ctx := context.Background()
 	req := testcontainers.ContainerRequest{
+		Name:         name,
 		Image:        image,
 		Env:          env,
 		ExposedPorts: []string{port},
+		Networks:     []string{networkName},
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,

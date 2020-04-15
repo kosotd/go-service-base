@@ -36,7 +36,6 @@ func TestCacheAndWriteJson(t *testing.T) {
 	assert.Equal(t, writer.callCount, 1)
 
 	time.Sleep(3 * time.Second)
-	err = CacheAndWriteJson(&writer, "test_cache", getResp)
-	assert.NilError(t, err)
+	MustCacheAndWriteJson(&writer, "test_cache", getResp)
 	assert.Equal(t, writer.callCount, 2)
 }

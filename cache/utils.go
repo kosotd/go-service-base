@@ -33,3 +33,9 @@ func CacheAndWriteJson(w http.ResponseWriter, cacheName string, responseSupplier
 	}
 	return nil
 }
+
+func MustCacheAndWriteJson(w http.ResponseWriter, cacheName string, responseSupplier func() (interface{}, error)) {
+	if err := CacheAndWriteJson(w, cacheName, responseSupplier); err != nil {
+		panic(err)
+	}
+}

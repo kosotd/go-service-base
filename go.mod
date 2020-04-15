@@ -6,10 +6,12 @@ require (
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.1.0
 	github.com/allegro/bigcache v1.2.1
 	github.com/cridenour/go-postgis v1.0.0
+	github.com/docker/distribution v2.7.1-0.20190205005809-0d3efadf0154+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-spatial/geom v0.0.0-20200122192844-0b80e497a93a
+	github.com/jmoiron/sqlx v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.3.0
 	github.com/pkg/errors v0.9.1
