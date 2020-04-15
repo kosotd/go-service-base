@@ -53,7 +53,7 @@ func TestDatabases(t *testing.T) {
 	assert.Equal(t, point.X, 10.0)
 	assert.Equal(t, point.Y, 20.0)
 
-	values = database.MustGetValues("PostgresDb", "select * from public.test")
+	values = database.MustGetValues("PostgresDb", "select * from public.test where $1=1", 1)
 	assert.Equal(t, values[0][0].(int64), int64(1))
 	assert.Equal(t, values[0][1].(string), "text")
 
@@ -82,7 +82,7 @@ func TestDatabases(t *testing.T) {
 
 	prepareOracleDb(oraConn, t)
 
-	values, err = database.GetValuesConn(oraConn, `SELECT * FROM test`)
+	values, err = database.GetValuesConn(oraConn, `SELECT * FROM test WHERE :1=1`, 1)
 	assert.NilError(t, err)
 	assert.Equal(t, values[0][0].(goracle.Number), goracle.Number("1"))
 	assert.Equal(t, values[0][1].(string), "text")
@@ -94,7 +94,7 @@ func TestDatabases(t *testing.T) {
 	assert.Equal(t, testOracle.Text, "text")
 
 	testOracleSlice := make([]TestOracle, 0)
-	err = database.ScanStructSlice(&testOracleSlice, "OracleDb", `SELECT * FROM test`)
+	err = database.ScanStructSlice(&testOracleSlice, "OracleDb", `SELECT * FROM test WHERE :1=1`, 1)
 	assert.NilError(t, err)
 	assert.Equal(t, testOracleSlice[0].Id, int64(1))
 	assert.Equal(t, testOracleSlice[0].Text, "text")
@@ -111,7 +111,7 @@ func TestDatabases(t *testing.T) {
 	assert.Equal(t, values[0][2].(time.Time).Nanosecond(), tm.Nanosecond())
 
 	var test1 TestPostgres
-	database.MustScanStruct(&test1, "PrestoDb", `select * from postgresql.public.test where id = 1`)
+	database.MustScanStruct(&test1, "PrestoDb", `select * from postgresql.public.test where id = ?`, 1)
 	assert.Equal(t, test1.Id, int64(1))
 	assert.Equal(t, *test1.Text, "text")
 	tm, err = time.Parse("2006-01-02", "2016-06-22")
