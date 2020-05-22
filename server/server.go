@@ -59,6 +59,10 @@ func AddGinPostHandler(path string, handler gin.HandlerFunc) {
 	router.POST(path, handler)
 }
 
+func GetRouter() *gin.Engine {
+	return router
+}
+
 func RunServer() {
 	defer cache.Close()
 	defer database.Close()
