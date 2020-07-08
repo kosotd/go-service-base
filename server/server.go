@@ -72,10 +72,20 @@ func RunServer() {
 		Handler: router,
 	}
 
+	crt, crtErr := config.String("CrtFile")
+	key, keyErr := config.String("KeyFile")
+
 	go func() {
 		utils.LogInfo(fmt.Sprintf("server started on port: %s", config.ServerPort()))
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			utils.FailIfError(errors.Wrapf(err, "error start server"))
+
+		if crtErr == nil && keyErr == nil {
+			if err := srv.ListenAndServeTLS(crt, key); err != nil && err != http.ErrServerClosed {
+				utils.FailIfError(errors.Wrapf(err, "error start server"))
+			}
+		} else {
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				utils.FailIfError(errors.Wrapf(err, "error start server"))
+			}
 		}
 	}()
 
