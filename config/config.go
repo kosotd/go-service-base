@@ -11,6 +11,7 @@ import (
 
 var conf map[string]interface{}
 var envHelper envHelperImpl
+var envConfig bool
 
 func init() {
 	conf = make(map[string]interface{})
@@ -20,6 +21,7 @@ func init() {
 	if utils.NotEmpty(*fileName) {
 		loadFileConfiguration(*fileName)
 	} else {
+		envConfig = true
 		loadEnvConfiguration()
 	}
 
@@ -71,6 +73,9 @@ func loadEnvConfiguration() {
 }
 
 func LoadEnvironment(loadFunc func(EnvHelper) map[string]interface{}) {
+	if !envConfig {
+		return
+	}
 	env := loadFunc(envHelper)
 	for k, v := range env {
 		conf[k] = v
