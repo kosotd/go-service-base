@@ -16,3 +16,7 @@ func FailIfNil(v interface{}, msg string) {
 		log.Fatalf(fmt.Sprintf("variable is nil: %s", msg))
 	}
 }
+
+func Fail(msg string) {
+	log.Fatalf("%s", msg)
+}
