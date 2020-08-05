@@ -38,8 +38,8 @@ func LogTrace(format string, v ...interface{}) {
 }
 
 func LogAndSetStatus(w http.ResponseWriter, code int, err error) {
-	LogError(err.Error())
-	http.Error(w, http.StatusText(code), code)
+	LogError("%v", err)
+	http.Error(w, fmt.Sprintf("%v", errors.Cause(err)), code)
 }
 
 func LogAndSetStatusIfError(w http.ResponseWriter, code int, err error) {
