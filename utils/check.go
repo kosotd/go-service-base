@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -11,12 +10,12 @@ func FailIfError(err error) {
 	}
 }
 
-func FailIfNil(v interface{}, msg string) {
+func FailIfNil(v interface{}, format string, args ...interface{}) {
 	if v == nil {
-		log.Fatalf(fmt.Sprintf("variable is nil: %s", msg))
+		log.Fatalf(format, args...)
 	}
 }
 
-func Fail(msg string) {
-	log.Fatalf("%s", msg)
+func Fail(format string, args ...interface{}) {
+	log.Fatalf(format, args...)
 }
