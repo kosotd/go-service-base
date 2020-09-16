@@ -10,13 +10,26 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 )
 
+var Client HttpClient = &http.Client{}
+
+type HttpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 func DoRequest(method domain.Method) (int, []byte, error) {
-	client := http.Client{}
+	if Client == nil {
+		return 0, nil, errors.Errorf("Client must not be nil")
+	}
+
 	if method.Timeout > 0 {
-		client.Timeout = method.Timeout
+		timeout := reflect.ValueOf(Client).Elem().FieldByName("Timeout")
+		if timeout.IsValid() {
+			timeout.SetInt(int64(method.Timeout))
+		}
 	}
 
 	var body io.Reader
@@ -45,9 +58,6 @@ func DoRequest(method domain.Method) (int, []byte, error) {
 		return 0, nil, errors.Wrap(err, "utils.DoRequest -> http.NewRequest")
 	}
 
-	for k, v := range method.Headers {
-		req.Header.Set(k, v)
-	}
 	if paramsType == params_type.FormUrlencoded {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	} else if paramsType == params_type.JsonBody {
@@ -59,8 +69,11 @@ func DoRequest(method domain.Method) (int, []byte, error) {
 		}
 		req.URL.RawQuery = q.Encode()
 	}
+	for k, v := range method.Headers {
+		req.Header.Set(k, v)
+	}
 
-	resp, err := client.Do(req)
+	resp, err := Client.Do(req)
 	if err != nil {
 		return 0, nil, errors.Wrap(err, "utils.DoRequest -> client.Do")
 	}
