@@ -9,12 +9,8 @@ import (
 	"strings"
 )
 
-var TokenChecker tokenChecker
+var TokenChecker func(username string, token string) error
 var tokenPattern = regexp.MustCompile(bearerTokenPattern)
-
-type tokenChecker interface {
-	CheckToken(username string, token string) error
-}
 
 func CheckTokenHandler(c *gin.Context) {
 	defer utils.LogAndSetStatusIfRecover(c.Writer, http.StatusExpectationFailed)
@@ -39,7 +35,7 @@ func CheckTokenHandler(c *gin.Context) {
 		return
 	}
 
-	if err := TokenChecker.CheckToken(username, strings.Trim(subm[1], " ")); err == nil {
+	if err := TokenChecker(username, strings.Trim(subm[1], " ")); err == nil {
 		c.Next()
 	} else {
 		utils.LogErrorAndSetStatus(c.Writer, http.StatusForbidden, errors.Wrapf(err, "handler.checkTokenHandler -> service.CheckToken"))
