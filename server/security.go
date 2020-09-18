@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/kosotd/go-service-base/utils"
 	"github.com/pkg/errors"
@@ -13,7 +14,12 @@ var TokenChecker func(username string, token string) error
 var tokenPattern = regexp.MustCompile(bearerTokenPattern)
 
 func CheckTokenHandler(c *gin.Context) {
-	defer utils.LogAndSetStatusIfRecover(c.Writer, http.StatusExpectationFailed)
+	defer func() {
+		if r := recover(); r != nil {
+			utils.LogErrorAndSetStatus(c.Writer, http.StatusExpectationFailed, errors.New(fmt.Sprint(r)))
+			c.Abort()
+		}
+	}()
 
 	if TokenChecker == nil {
 		c.Next()
