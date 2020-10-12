@@ -11,6 +11,7 @@ type EnvHelper interface {
 	GetEnvInt(key string, def int) int
 	GetEnvInt64(key string, def int64) int64
 	GetEnvStringList(key string, def []string) []string
+	GetEnvMap(key string, def map[string]interface{}) map[string]interface{}
 }
 
 type envHelperImpl struct{}
@@ -45,6 +46,16 @@ func (envHelperImpl) GetEnvStringList(key string, def []string) []string {
 		var list []string
 		if err := json.Unmarshal([]byte(value), &list); err == nil {
 			return list
+		}
+	}
+	return def
+}
+
+func (envHelperImpl) GetEnvMap(key string, def map[string]interface{}) map[string]interface{} {
+	if value, ok := os.LookupEnv(key); ok {
+		var res map[string]interface{}
+		if err := json.Unmarshal([]byte(value), &res); err == nil {
+			return res
 		}
 	}
 	return def

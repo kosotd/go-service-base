@@ -130,6 +130,25 @@ func MustStringList(key string) []string {
 	}
 }
 
+func Map(key string) (map[string]interface{}, error) {
+	val, ok := conf[key]
+	if !ok {
+		return nil, errors.Errorf("property %s not found", key)
+	}
+	if res, ok := val.(map[string]interface{}); ok {
+		return res, nil
+	}
+	return nil, errors.Errorf("property %s is not map", key)
+}
+
+func MustMap(key string) map[string]interface{} {
+	if res, err := Map(key); err != nil {
+		panic(err)
+	} else {
+		return res
+	}
+}
+
 func Duration(key string) (time.Duration, error) {
 	val, ok := conf[key]
 	if !ok {

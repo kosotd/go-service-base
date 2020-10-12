@@ -11,5 +11,6 @@
   "Test": 1,
   "Test1": "test",
   "Test2": ["test"],
-  "Test3": "1m"
+  "Test3": "1m",
+  "Test4": {"x": 1}
 }

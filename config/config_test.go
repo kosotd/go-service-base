@@ -25,6 +25,7 @@ func TestLoadFileConfiguration(t *testing.T) {
 	assert.Equal(t, MustString("Test1"), "test")
 	assert.Equal(t, reflect.DeepEqual(MustStringList("Test2"), []string{"test"}), true)
 	assert.Equal(t, MustDuration("Test3"), 1*time.Minute)
+	assert.DeepEqual(t, MustMap("Test4"), map[string]interface{}{"x": float64(1)})
 
 	conf = make(map[string]interface{})
 
@@ -68,6 +69,7 @@ TEST1=test
 TEST2=["test"]
 TEST3="1m"
 TEST4=2
+TEST5={"x":1}
 `
 	_ = ioutil.WriteFile("config.env", []byte(content), os.ModePerm)
 	defer func() { _ = os.Remove("config.env") }()
@@ -79,6 +81,7 @@ TEST4=2
 			"Test2": helper.GetEnvStringList("TEST2", []string{}),
 			"Test3": helper.GetEnvString("TEST3", ""),
 			"Test4": helper.GetEnvInt64("TEST4", 0),
+			"Test5": helper.GetEnvMap("TEST5", nil),
 		}
 	})
 
@@ -94,6 +97,7 @@ TEST4=2
 	assert.Equal(t, reflect.DeepEqual(MustStringList("Test2"), []string{"test"}), true)
 	assert.Equal(t, MustDuration("Test3"), 1*time.Minute)
 	assert.Equal(t, MustInt64("Test4"), int64(2))
+	assert.DeepEqual(t, MustMap("Test5"), map[string]interface{}{"x": float64(1)})
 }
 
 func TestGetProperties(t *testing.T) {
@@ -151,4 +155,14 @@ func TestGetProperties(t *testing.T) {
 	d, err = Duration("duration")
 	assert.NilError(t, err)
 	assert.Equal(t, d, time.Duration(1*time.Second))
+
+	_, err = Map("map")
+	assert.Error(t, err, "property map not found")
+	conf["map"] = ""
+	_, err = Map("map")
+	assert.Error(t, err, "property map is not map")
+	conf["map"] = map[string]interface{}{"x": 1}
+	m, err := Map("map")
+	assert.NilError(t, err)
+	assert.DeepEqual(t, m, map[string]interface{}{"x": 1})
 }
