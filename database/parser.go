@@ -9,7 +9,7 @@ import (
 	"regexp"
 )
 
-var urlPattern = regexp.MustCompile(`(\w+);(\w+):(\w+)/(\w+)@([\d\w.]+):(\d+)(/(\w+))?`)
+var urlPattern = regexp.MustCompile(`(\w+);(\w+):(\w+)/(\w+)@([\d\w.-]+):(\d+)(/(\w+))?`)
 
 func parseUrl(url string) (ldomain.Connection, error) {
 	if !urlPattern.MatchString(url) {
