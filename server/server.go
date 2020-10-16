@@ -72,6 +72,14 @@ func RunServer() {
 		Handler: router,
 	}
 
+	if readTimeout, err := config.Duration("ReadTimeout"); err == nil {
+		srv.ReadTimeout = readTimeout
+	}
+
+	if writeTimeout, err := config.Duration("WriteTimeout"); err == nil {
+		srv.WriteTimeout = writeTimeout
+	}
+
 	crt, crtErr := config.String("CrtFile")
 	key, keyErr := config.String("KeyFile")
 
