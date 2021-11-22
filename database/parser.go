@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// !!!
-var urlPattern = regexp.MustCompile(`(\w+);(\w+):([\d\w.!-]+)/(\w+)@([\d\w.-]+):(\d+)(/(\w+))?`)
+var urlPattern = regexp.MustCompile(`(\w+);(\w+):([\d\w.!-]+)/([\d\w.!-]+)@([\d\w.-]+):(\d+)(/(\w+))?`)
 
 func parseUrl(url string) (ldomain.Connection, error) {
 	if !urlPattern.MatchString(url) {
