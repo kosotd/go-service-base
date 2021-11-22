@@ -1,14 +1,16 @@
 package database
 
 import (
+	"regexp"
+
 	ldomain "github.com/kosotd/go-service-base/database/domain"
 	"github.com/kosotd/go-service-base/database/url/builder"
 	"github.com/kosotd/go-service-base/database/url/domain"
 	"github.com/kosotd/go-service-base/utils"
 	"github.com/pkg/errors"
-	"regexp"
 )
 
+// !!!
 var urlPattern = regexp.MustCompile(`(\w+);(\w+):([\d\w.!-]+)/(\w+)@([\d\w.-]+):(\d+)(/(\w+))?`)
 
 func parseUrl(url string) (ldomain.Connection, error) {
